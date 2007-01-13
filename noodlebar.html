@@ -1,0 +1,205 @@
+<html>
+  <head>
+    <title>Neech's Noodlebar to-be-Ajaxey-Menu-Orderer-Thingie</title>
+    <style type="text/css">
+<%shared>
+	my $colwidth = 310;
+	my %colours = (
+			green   => '#00bb00',
+			white   => '#ffffff',
+			magenta => '#cc0033',
+		);
+</%shared>
+      body,BODY {
+        background-color: <% $colours{green} %>;
+        color: <% $colours{green} %>;
+      }
+      body,BODY,p {
+        font-family: Helvetica, sans-serif;
+        font-size: 8pt;
+      }
+      p {
+        margin-top: 0px;
+      }
+      h1 {
+        font-size: 10pt;
+        margin-bottom: 0px;
+      }
+      h2 {
+        font-size: 8pt;
+        margin-left: -25px;
+        margin-bottom: 6px;
+      }
+      h3 {
+        font-size: 7.5pt;
+        margin-bottom: 6px;
+      }
+      h1, h2, h3, h4, h5 {
+        color: <% $colours{magenta} %>;
+      }
+      ol {
+        margin-left: 0px;
+        padding-left: 25px;
+        font-size: 7pt;
+      }
+      li {
+        font-weight: normal;
+      }
+      div.menubox {
+        background-color: <% $colours{white} %>;
+        padding: 1px 10px 6px 10px;
+        border-radius: 15px 15px;
+        -moz-border-radius: 15px 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <table border="0" cellpadding="0" cellspacing="0" width="<% $colwidth * 4 %>">
+      <tr>
+        <td valign="top" align="left" width="<% $colwidth %>">
+
+<&| .box, width => 280, title => 'sides & bites',
+	comment => 'great to share or to accompany your main meal',
+	footer => 'why not try ordering a side with something from our extras section for a great main meal' &>
+      <ol>
+%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'side' ORDER BY item_id");
+%	$sth->execute;
+%	my $lastPrice = 0;
+%	while (my $href = $sth->fetchrow_hashref()) {
+%		my $br = 0;
+%		if ($href->{price} != $lastPrice) {
+        <h2>all at &pound;<% $href->{price} %> per portion</h2>
+%		}
+        <li><b><% $href->{title} |h %></b> <& .dots, item => $href, br => 1 &> <% $href->{info} |h %> </li>
+%		$lastPrice = $href->{price};
+%	}
+      </ol>
+</&>
+
+        </td>
+        <td valign="top" align="left" width="<% $colwidth %>">
+      
+<&| .box, width => 280, title => 'wok fried noodles',
+	comment => 'w onion, beansprout, carrot & spring onion, lightly seasoned w soy sauce',
+	footer => 'be aware the noodles in your soup will absorb the stock if left for any length of time' &>
+      <ol>
+%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'noodles' GROUP BY item_id");
+%	$sth->execute;
+%	while (my $href = $sth->fetchrow_hashref()) {
+        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
+%	}
+      </ol>
+      <h1>soup noodles</h1>
+      <ol>
+%	$sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'soup' GROUP BY item_id");
+%	$sth->execute;
+%	while (my $href = $sth->fetchrow_hashref()) {
+        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
+%	}
+      </ol>
+</&>
+
+      <p></p>
+
+<&| .box, width => 280, title => 'extras' &>
+      <ol>
+%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'extra' ORDER BY item_id");
+%	$sth->execute;
+%	while (my $href = $sth->fetchrow_hashref()) {
+        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
+%	}
+      </ol>
+</&>
+
+
+        </td>
+        <td valign="top" align="left" width="<% $colwidth %>">
+      
+
+<&| .box, width => 280, title => 'sauces & dips' &>
+      <ol>
+%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'sauce' ORDER BY item_id");
+%	$sth->execute;
+%	while (my $href = $sth->fetchrow_hashref()) {
+        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
+%	}
+      </ol>
+</&>
+
+
+        </td>
+        <td valign="top" align="left" width="<% $colwidth %>">
+      
+
+<&| .box, width => 280, title => 'wok fried rice', comment => 'edd rice w seasame oil, soy sauce & garden peas' &>
+      <ol>
+%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'wokrice' ORDER BY item_id");
+%	$sth->execute;
+%	while (my $href = $sth->fetchrow_hashref()) {
+        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
+%	}
+      </ol>
+</&>
+
+ 
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+
+<%def .dots>
+	<%args>
+		$item
+		$br => 0
+	</%args>
+%	my $dots = 0;
+          <% ($item->{vegetarian} && ++$dots ? '<img src="vegetarian.gif" width="6" height="6" alt="(v)" />' : '') %>
+          <% ($item->{nuts} && ++$dots ? '<img src="nuts.gif" width="6" height="6" alt="(n)" />' : '') %>
+          <% ($item->{children} && ++$dots ? '<img src="children.gif" width="6" height="6" alt="(c)" />' : '') %>
+%	if ($br && $dots) {
+          <br />
+%	}
+</%def>
+
+<%def .box>
+	<%args>
+		$width => 300
+		$radius => 15
+		$height => undef
+		$title => undef
+		$comment => undef
+		$footer => undef
+	</%args>
+    <div class="menubox" style="width: <% $width %>px;">
+%	if ($title) {
+      <h1><% $title |h %></h1>
+%	}
+%	if ($comment) {
+      <p><% $comment |h %></p>
+%	}
+<% $m->content %>
+%	if ($footer) {
+      <center><h3><% $footer |h %></h3></comment>
+%	}
+    </div>
+</%def>
+
+<%init>
+	use Data::Dumper;
+	use DBI;
+	my $dbh = DBI->connect('DBI:mysql:database=nicolaw;host=127.0.0.1','nicolaw','knickers', { RaiseError => 'true' });
+	my $baseQuery = qq{
+		SELECT nb_item.*,
+			nb_type.variant, nb_type.description AS type_description, nb_type.suppliment,
+			nb_style.description AS style_description
+		FROM nb_item
+			LEFT JOIN nb_type ON nb_item.type = nb_type.type
+			LEFT JOIN nb_style ON nb_item.style_id = nb_style.style_id
+		};
+</%init>
+
+<%flags>
+	inherit => undef
+</%flags>
+
