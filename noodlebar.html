@@ -3,7 +3,10 @@
     <title>Neech's Noodlebar to-be-Ajaxey-Menu-Orderer-Thingie</title>
     <style type="text/css">
 <%shared>
-	my $colwidth = 310;
+	my $tableboarder = 0;
+	my $colwidth = 320;
+	my $corners = 15;
+	my $boxwidth = $colwidth - ($corners * 2);
 	my %colours = (
 			green   => '#00bb00',
 			white   => '#ffffff',
@@ -14,12 +17,13 @@
         background-color: <% $colours{green} %>;
         color: <% $colours{green} %>;
       }
-      body,BODY,p {
+      body,BODY,p, table.itemlist {
         font-family: Helvetica, sans-serif;
         font-size: 8pt;
       }
       p {
         margin-top: 0px;
+        margin-bottom: 5px;
       }
       h1 {
         font-size: 10pt;
@@ -27,12 +31,13 @@
       }
       h2 {
         font-size: 8pt;
-        margin-left: -25px;
+        /* margin-left: -25px; */
         margin-bottom: 6px;
       }
       h3 {
         font-size: 7.5pt;
-        margin-bottom: 6px;
+        margin-top: 5px;
+        margin-bottom: 0px;
       }
       h1, h2, h3, h4, h5 {
         color: <% $colours{magenta} %>;
@@ -45,108 +50,185 @@
       li {
         font-weight: normal;
       }
+      table.itemlist td {
+        text-align: left;
+        vertical-align: top;
+        font-size: 7pt;
+      }
+      table.itemlist td.idcolumn {
+        width: 25px;
+      }
+      table.itemlist td.pricecolumn {
+        text-align: right;
+        width: 40px;
+        font-size: 8pt;
+      }
       div.menubox {
         background-color: <% $colours{white} %>;
         padding: 1px 10px 6px 10px;
-        border-radius: 15px 15px;
-        -moz-border-radius: 15px 15px;
+        border-radius: <% $corners %>px <% $corners %>px;
+        -moz-border-radius: <% $corners %>px <% $corners %>px;
       }
     </style>
   </head>
   <body>
-    <table border="0" cellpadding="0" cellspacing="0" width="<% $colwidth * 4 %>">
+    <table border="<% $tableboarder %>" cellpadding="0" cellspacing="0" width="<% $colwidth * 4 %>">
       <tr>
         <td valign="top" align="left" width="<% $colwidth %>">
 
-<&| .box, width => 280, title => 'sides & bites',
+<&| .box, width => $boxwidth &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'side' ORDER BY item_id",
+	prices => 'title',
+	title => 'sides & bites',
 	comment => 'great to share or to accompany your main meal',
 	footer => 'why not try ordering a side with something from our extras section for a great main meal' &>
-      <ol>
-%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'side' ORDER BY item_id");
-%	$sth->execute;
-%	my $lastPrice = 0;
-%	while (my $href = $sth->fetchrow_hashref()) {
-%		my $br = 0;
-%		if ($href->{price} != $lastPrice) {
-        <h2>all at &pound;<% $href->{price} %> per portion</h2>
-%		}
-        <li><b><% $href->{title} |h %></b> <& .dots, item => $href, br => 1 &> <% $href->{info} |h %> </li>
-%		$lastPrice = $href->{price};
-%	}
-      </ol>
 </&>
 
         </td>
         <td valign="top" align="left" width="<% $colwidth %>">
       
-<&| .box, width => 280, title => 'wok fried noodles',
-	comment => 'w onion, beansprout, carrot & spring onion, lightly seasoned w soy sauce',
+<&| .box, width => $boxwidth &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'noodles' GROUP BY item_id",
+	title => 'wok fried noodles',
+	comment => 'w onion, beansprout, carrot & spring onion, lightly seasoned w soy sauce. choose from:' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'soup' GROUP BY item_id",
+	title => 'soup noodles',
+	comment => 'traditional clear, lightly seasoned chinese noodle soup, garnished w chinese leaf & spring onions. choose from:',
 	footer => 'be aware the noodles in your soup will absorb the stock if left for any length of time' &>
-      <ol>
-%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'noodles' GROUP BY item_id");
-%	$sth->execute;
-%	while (my $href = $sth->fetchrow_hashref()) {
-        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
-%	}
-      </ol>
-      <h1>soup noodles</h1>
-      <ol>
-%	$sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'soup' GROUP BY item_id");
-%	$sth->execute;
-%	while (my $href = $sth->fetchrow_hashref()) {
-        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
-%	}
-      </ol>
 </&>
 
       <p></p>
 
-<&| .box, width => 280, title => 'extras' &>
-      <ol>
-%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'extra' ORDER BY item_id");
-%	$sth->execute;
-%	while (my $href = $sth->fetchrow_hashref()) {
-        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
-%	}
-      </ol>
+<&| .box, width => $boxwidth &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'extra' ORDER BY item_id",
+	title => 'extras' &>
 </&>
-
 
         </td>
-        <td valign="top" align="left" width="<% $colwidth %>">
-      
+        <td valign="top" align="left" width="<% $colwidth * 2 %>">
+          <table border="<% $tableboarder %>" cellpadding="0" cellspacing="0" width="<% $colwidth * 2 %>">
+            <tr>
+              <td valign="top" align="left" colspan="2" width="<% $colwidth * 2 %>">
+<&| .box, width => ($boxwidth * 2) + ($corners * 2) &>
+                <table border="<% $tableboarder %>" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td valign="top" align="left" width="<% $boxwidth %>">
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 50 AND item_id < 60 GROUP BY item_id",
+	title => 'stir fry',
+	comment => 'light soy flavoured sauce w onion' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 60 AND item_id < 70 GROUP BY item_id",
+	title => 'sweet and sour',
+	comment => 'w onion, pineapple & peppers' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 70 AND item_id < 80 GROUP BY item_id",
+	title => 'blackbean',
+	comment => 'blackbean sauce w mild chili, onion & peppers' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 80 AND item_id < 90 GROUP BY item_id",
+	title => 'chinese curry',
+	comment => 'mild sauce w wok fried onion' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 90 AND item_id < 100 GROUP BY item_id",
+	title => 'yellowbean',
+	comment => 'sweet hoi sin & crushed yellowbean sauce w onion, cashew & peppers' &>
+                    </td>
+                    <td width="<% $corners * 2 %>">&nbsp;</td>
+                    <td valign="top" align="left" width="<% $boxwidth %>">
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 100 AND item_id < 110 GROUP BY item_id",
+	title => 'chili & garlic',
+	comment => 'spicy sauce w fresh chili, garlic and onion & peppers' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 110 AND item_id < 120 GROUP BY item_id",
+	title => 'kung po',
+	comment => 'sweet & tangy sauce made w orange, mild chili, pineapple, cashew & peppers' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 120 AND item_id < 130 GROUP BY item_id",
+	title => 'chinese roast gravy',
+	comment => 'w chinese leaf, spring onion garnish & gracy' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 130 AND item_id < 140 GROUP BY item_id",
+	title => 'cantonese',
+	comment => 'tangy, sweet sauce w tomato, onion & peppers' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 140 AND item_id < 150 GROUP BY item_id",
+	title => 'ginger & spring onion',
+	comment => 'w soy sauce, carrot, sliced ginger & onion' &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'rice' AND item_id >= 150 AND item_id < 160 GROUP BY item_id",
+	title => 'malay curry',
+	comment => 'medium coconut curry w potato, baby corn & peas',
+	footer => 'all ricebar mixed vegetable dishes contain onion, spring onion, chinese leaf, musroom, babycorn, carrot, cashew, peas, beansprouts & peppers' &>
+                    </td>
+                  </tr>
+                </table>
+</&>
+                <p></p>
 
-<&| .box, width => 280, title => 'sauces & dips' &>
-      <ol>
-%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'sauce' ORDER BY item_id");
-%	$sth->execute;
-%	while (my $href = $sth->fetchrow_hashref()) {
-        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
-%	}
-      </ol>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top" align="left" width="<% $colwidth %>">
+
+<&| .box, width => $boxwidth &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'sauce' ORDER BY item_id",
+	title => 'sauces & dips' &>
 </&>
 
+              </td>
+              <td valign="top" align="left" width="<% $colwidth %>">
 
-        </td>
-        <td valign="top" align="left" width="<% $colwidth %>">
-      
-
-<&| .box, width => 280, title => 'wok fried rice', comment => 'edd rice w seasame oil, soy sauce & garden peas' &>
-      <ol>
-%	my $sth = $dbh->prepare("$baseQuery WHERE nb_item.type = 'wokrice' ORDER BY item_id");
-%	$sth->execute;
-%	while (my $href = $sth->fetchrow_hashref()) {
-        <li><b><% $href->{title} |h %></b> <% $href->{info} |h %> <& .dots, item => $href, br => 1 &></li>
-%	}
-      </ol>
+<&| .box, width => $boxwidth &>
+<& .items, sql => "$baseQuery WHERE nb_item.type = 'wokrice' ORDER BY item_id",
+	title => 'wok fried rice',
+	comment => 'edd rice w seasame oil, soy sauce & garden peas',
+	footer => 'please look in our sauces & dips section if you fancy a sauce' &>
 </&>
 
- 
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>
   </body>
 </html>
+
+<%def .items>
+	<%args>
+		$sql
+		$br => 0
+		$title => undef
+		$comment => undef
+		$footer => undef
+		$prices => 'column'
+		$width => '100%'
+	</%args>
+%	my $item = {};
+%	if ($title) {
+%		$title =~ s/\%(\w+)\%/$item->{$1}/g;
+      <h1><% $title |h %></h1>
+%	}
+%	if ($comment) {
+%		$comment =~ s/\%(\w+)\%/$item->{$1}/g;
+      <p><% $comment |h %></p>
+%	}
+%	my $sth = $dbh->prepare($sql);
+%	$sth->execute;
+      <table class="itemlist" width="<% $width %>" border="<% $tableboarder %>" cellpadding="0" cellspacing="0">
+%	my $lastPrice = 0;
+%	while (my $item = $sth->fetchrow_hashref()) {
+%		if ($prices eq 'title' && $item->{price} != $lastPrice) {
+        <tr><td colspan="3"><h2>all at &pound;<% $item->{price} %> per portion</h2></td></tr>
+%		}
+        <tr>
+          <td class="idcolumn"><% $item->{item_id} %></td>
+          <td class="desccolumn" <% ($prices ne 'column' ? ' colspan="2"' : '') %>><b><% $item->{title} |h %></b>
+            <% $item->{info} |h %>
+            <& .dots, item => $item, br => 1 &>
+          </td>
+%		if ($prices eq 'column') {
+          <td class="pricecolumn">&pound;<% $item->{price} %></td>
+%		}
+        </tr>
+%		$lastPrice = $item->{price};
+%	}
+      </table>
+%	if ($footer) {
+      <center><h3><% $footer |h %></h3></comment>
+%	}
+</%def>
 
 <%def .dots>
 	<%args>
@@ -164,7 +246,7 @@
 
 <%def .box>
 	<%args>
-		$width => 300
+		$width => $boxwidth 
 		$radius => 15
 		$height => undef
 		$title => undef
@@ -185,7 +267,7 @@
     </div>
 </%def>
 
-<%init>
+<%shared>
 	use Data::Dumper;
 	use DBI;
 	my $dbh = DBI->connect('DBI:mysql:database=nicolaw;host=127.0.0.1','nicolaw','knickers', { RaiseError => 'true' });
@@ -197,7 +279,16 @@
 			LEFT JOIN nb_type ON nb_item.type = nb_type.type
 			LEFT JOIN nb_style ON nb_item.style_id = nb_style.style_id
 		};
-</%init>
+
+	sub underline {
+		my $output = $_[0];
+		my @strings = qw(w);
+		for (@strings) {
+			$output =~ s,\b($_)\b,<ul>$1</ul>,g;
+		}
+		return $output;
+	}
+</%shared>
 
 <%flags>
 	inherit => undef
